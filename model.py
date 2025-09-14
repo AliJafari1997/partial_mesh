@@ -102,76 +102,46 @@ def CBAM(x, ratio=8, kernel_size=7):
     x = ch_attention(x)
     x = s_attention(x)
     return x
+def partial_mesh(e1, e2, e3, idx, num_filters, strides = 1, ratio=8, kernel_size=7):
 
-def partial_mesh(d1, d2, d3, d4, idx, num_filters, strides = 1, ratio=8, kernel_size=7):
-
-    if idx == 4:
-        d1, d2, d3, d4 = spatial_attention(kernel_size=kernel_size)(d1), channel_attention(ratio = ratio)(d2), channel_attention(ratio = ratio)(d3), channel_attention(ratio = ratio)(d4)
+    if idx == 1:
+        e1, e2, e3 = spatial_attention(kernel_size=kernel_size)(e1), CBAM(e2), CBAM(e3)
         
-        d4 = Conv2D(num_filters, 3, strides=strides, padding='same')(d4)
+        e1 = Conv2D(num_filters, 3, strides=strides, padding='same')(e1)
 
-        d3 = UpSampling2D((2, 2))(d3)
-        d3 = Conv2D(num_filters, 3, strides=strides, padding='same')(d3)
+        e2 = UpSampling2D((2, 2))(e2)
+        e2 = Conv2D(num_filters, 3, strides=strides, padding='same')(e2)
 
-
-        d2 = UpSampling2D((4, 4))(d2)
-        d2 = Conv2D(num_filters, 3, strides=strides, padding='same')(d2)
-
-
-        d1 = UpSampling2D((8, 8))(d1)
-        d1 = Conv2D(num_filters, 3, strides=strides, padding='same')(d1)
-
-
-    elif idx == 3:
-
-        d4 = spatial_attention(kernel_size=kernel_size)(d4)
-        d4 = AveragePooling2D((2, 2))(d4)
-        d4 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(d4)
-
-        d3 = spatial_attention(kernel_size=kernel_size)(d3)
-        d3 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(d3)
-
-        d2 = channel_attention(ratio = ratio)(d2)
-        d2 = UpSampling2D((2, 2))(d2)
-        d2 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(d2)
-
-        d1 = channel_attention(ratio = ratio)(d1)
-        d1 = UpSampling2D((4, 4))(d1)
-        d1 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(d1)
+        e3 = UpSampling2D((4, 4))(e3)
+        e3 = Conv2D(num_filters, 3, strides=strides, padding='same')(e3)
 
     elif idx == 2:
-        d4 = spatial_attention(kernel_size=kernel_size)(d4)
-        d4 = AveragePooling2D((4, 4))(d4)
-        d4 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(d4)
 
-        d3 = spatial_attention(kernel_size=kernel_size)(d3)
-        d3 = AveragePooling2D((2, 2))(d3)
-        d3 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(d3)  
+        e1 = spatial_attention(kernel_size=kernel_size)(e1)
+        e1 = AveragePooling2D((2, 2))(e1)
+        e1 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(e1)
 
-        d2 = spatial_attention(kernel_size=kernel_size)(d2)
-        d2 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(d2)  
+        e2 = spatial_attention(kernel_size=kernel_size)(e2)
+        e2 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(e2)
 
-        d1 = channel_attention(ratio = ratio)(d1)
-        d1 = UpSampling2D((2, 2))(d1)
-        d1 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(d1)
+        e3 = CBAM(e3)
+        e3 = UpSampling2D((2, 2))(e3)
+        e3 = Conv2D(num_filters * 2, 3, strides=strides, padding='same')(e3)
 
-    elif idx == 1:
-        d4 = spatial_attention(kernel_size=kernel_size)(d4)
-        d4 = AveragePooling2D((8, 8))(d4)
-        d4 = Conv2D(num_filters * 8, 3, strides=strides, padding='same')(d4)
+    elif idx == 3:
+        e1 = spatial_attention(kernel_size=kernel_size)(e1)
+        e1 = AveragePooling2D((4, 4))(e1)
+        e1 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(e1)
 
-        d3 = spatial_attention(kernel_size=kernel_size)(d3)
-        d3 = AveragePooling2D((4, 4))(d3)
-        d3 = Conv2D(num_filters * 8, 3, strides=strides, padding='same')(d3)
+        e2 = spatial_attention(kernel_size=kernel_size)(e2)
+        e2 = AveragePooling2D((2, 2))(e2)
+        e2 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(e2)  
 
-        d2 = spatial_attention(kernel_size=kernel_size)(d2)
-        d2 = AveragePooling2D((2, 2))(d2)
-        d2 = Conv2D(num_filters * 8, 3, strides=strides, padding='same')(d2)
+        e3 = spatial_attention(kernel_size=kernel_size)(e3)
+        e3 = Conv2D(num_filters * 4, 3, strides=strides, padding='same')(e3)  
 
-        d1 = spatial_attention(kernel_size=kernel_size)(d1)
-        d1 = Conv2D(num_filters * 8, 3, strides=strides, padding='same')(d1)
+    return e1 * e2 * e3
 
-    return d1 * d2 * d3 * d4
 
 def conv_block(input, num_filters):
     x = Conv2D(num_filters, 3, padding="same")(input)
@@ -197,28 +167,71 @@ def decoder_block(input, skip_features, num_filters):
     return x
 
 
-def build_model(input_shape):
+
+def batchnorm_relu(inputs):
+    """ Batch Normalization & ReLU """
+    x = BatchNormalization()(inputs)
+    x = Activation("relu")(x)
+    return x
+
+def residual_block(inputs, num_filters, strides=1):
+    """ Convolutional Layers """
+    x = batchnorm_relu(inputs)
+    x = Conv2D(num_filters, 3, padding="same", strides=strides)(x)
+    x = batchnorm_relu(x)
+    x = Conv2D(num_filters, 3, padding="same", strides=1)(x)
+
+    """ Shortcut Connection (Identity Mapping) """
+    s = Conv2D(num_filters, 1, padding="same", strides=strides)(inputs)
+
+    """ Addition """
+    x = x + s
+    return x
+
+def decoder_block(input, skip_features, num_filters):
+    x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input)
+    x = Concatenate()([x, skip_features])
+    x = conv_block(x, num_filters)
+    return x
+
+def build_resunet(input_shape):
+    """ RESUNET Architecture """
+
     inputs = Input(input_shape)
 
-    s1, p1 = encoder_block(inputs, 64)
-    s2, p2 = encoder_block(p1, 128)
-    s3, p3 = encoder_block(p2, 256)
-    s4, p4 = encoder_block(p3, 512)
+    """ Endoder 1 """
+    x = Conv2D(64, 3, padding="same", strides=1)(inputs)
+    x = batchnorm_relu(x)
+    x = Conv2D(64, 3, padding="same", strides=1)(x)
+    s = Conv2D(64, 1, padding="same")(inputs)
+    s1 = x + s
 
-    b1 = conv_block(p4, 1024)
+    """ Encoder 2, 3 """
+    s2 = residual_block(s1, 128, strides=2)
+    s3 = residual_block(s2, 256, strides=2)
 
-    d1 = decoder_block(b1, s4, 512)
-    d2 = decoder_block(d1, s3, 256)
-    d3 = decoder_block(d2, s2, 128)
-    d4 = decoder_block(d3, s1, 64)
+    """ Bridge """
+    b = residual_block(s3, 512, strides=2)
 
-    outputs = Conv2D(1, 1, padding="same", activation="sigmoid")(d4)
+    par1 = partial_mesh(s1, s2, s3, 1, 64, strides = 1, ratio=8, kernel_size=7)
+    par2 = partial_mesh(s1, s2, s3, 2, 64, strides = 1, ratio=8, kernel_size=7)
+    par3 = partial_mesh(s1, s2, s3, 3, 64, strides = 1, ratio=8, kernel_size=7)
+    
+    """ Decoder 1, 2, 3 """
 
-    model = Model(inputs, outputs, name="U-Net")
+    x = decoder_block(b, par3, 256)
+    x = decoder_block(x, par2, 128)
+    x = decoder_block(x, par1, 64)
+
+    """ Classifier """
+    outputs = Conv2D(1, 1, padding="same", activation="sigmoid")(x)
+
+    """ Model """
+    model = Model(inputs, outputs, name="RESUNET")
+
     return model
 
-
 if __name__ == "__main__":
-    input_shape = (256, 256, 3)
-    model = build_model(input_shape)
+    shape = (224, 224, 3)
+    model = build_resunet(shape)
     model.summary()
