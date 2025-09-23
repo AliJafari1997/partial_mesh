@@ -7,7 +7,7 @@ from tensorflow.keras.callbacks import *
 from tensorflow.keras.optimizers import Adam, Nadam
 from tensorflow.keras.metrics import *
 from sklearn.model_selection import train_test_split
-from model import build_model
+from model import build_resunet
 from utils import *
 from metrics import *
 
