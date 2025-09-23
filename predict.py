@@ -6,11 +6,10 @@ import cv2
 import tensorflow as tf
 from tensorflow.keras.utils import CustomObjectScope
 from tqdm import tqdm
-from data import load_data
 from train import tf_dataset
 from metrics import *
 from tensorflow.keras.metrics import *
-from model import build_model
+from model import build_resunet
 from metrics import *
 from utils import *
 from tensorflow.keras.optimizers import Adam, Nadam
@@ -39,7 +38,7 @@ if __name__ == "__main__":
     lr = 1.0000e-06
     np.random.seed(42)
     tf.random.set_seed(42)
-    create_dir("/content/drive/MyDrive/partial_mesh_resunet_cvc/")
+    create_dir("/content/drive/MyDrive/partial_mesh_resunet_cvc_predict/")
     ## Dataset
     test_path = "/content/drive/MyDrive/clinic_augmented/test/"
     batch_size = 6
@@ -74,4 +73,4 @@ if __name__ == "__main__":
         ]
 
         image = np.concatenate(all_images, axis=1)
-        cv2.imwrite(f"/content/drive/MyDrive/files_full_mesh/{i}.jpg", image)
+        cv2.imwrite(f"/content/drive/MyDrive/partial_mesh_resunet_cvc_predict/{i}.jpg", image)
